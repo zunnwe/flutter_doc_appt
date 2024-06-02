@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_doc_appt/components/login_form.dart';
+import 'package:flutter_doc_appt/components/sign_up.dart';
 import 'package:flutter_doc_appt/components/social_button.dart';
 import 'package:flutter_doc_appt/main_layout.dart';
 import 'package:flutter_doc_appt/utils/config.dart';
@@ -15,9 +16,10 @@ class _AuthPageState extends State<AuthPage>{
   bool isSignIn = true;
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
+    Config().init(context);
     return Scaffold(
-      body: Padding(padding: const EdgeInsets.symmetric(  //symmetric is used when horizontal and vertical padding is specified separately
+      body: Padding(
+        padding: const EdgeInsets.symmetric(  //symmetric is used when horizontal and vertical padding is specified separately
         horizontal: 15,
         vertical: 15,
       ),
@@ -35,14 +37,18 @@ class _AuthPageState extends State<AuthPage>{
             ),
             Config.spaceSmall,
             Text(
-              AppText.entext['signIn_text']!,
+              isSignIn
+              ? AppText.entext['signIn_text']!
+              : AppText.entext['register_text']!,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
             Config.spaceSmall,
-            const LoginForm(),
+            isSignIn
+            ? const LoginForm()
+            : const SignUpForm(),
             const Spacer(),
             Center(
               child: Text(
@@ -68,7 +74,9 @@ class _AuthPageState extends State<AuthPage>{
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Text(
-                      AppText.entext['signUp_text']!,
+                      isSignIn
+                      ? AppText.entext['signUp_text']!
+                      : AppText.entext['registered_text']!,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.normal,
@@ -80,13 +88,18 @@ class _AuthPageState extends State<AuthPage>{
                     //   child: Text('Sign Up'))
                     GestureDetector(
                       onTap: (){
-                        Navigator.push(
-                          context, 
-                          MaterialPageRoute(builder: (context) => MainLayout()));
+                        setState(() {
+                          isSignIn = !isSignIn;
+                        });
+                        // Navigator.push(
+                        //  context, 
+                        //  MaterialPageRoute(builder: (context) => const MainLayout()));
                       },
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(color: Config.primaryColor),),
+                      child: Text(
+                        isSignIn
+                        ? 'Sign Up'
+                        : 'Sign In',
+                        style: const TextStyle(color: Config.primaryColor),),
                     )
                   ],
                 )

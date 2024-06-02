@@ -8,19 +8,20 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-class LoginForm extends StatefulWidget{
-  const LoginForm({Key? key}): super(key: key);
-  
+class SignUpForm extends StatefulWidget{
+  const SignUpForm({Key? key}): super(key: key);
   @override
-  State<LoginForm> createState() => _LoginFormState();
+  State<SignUpForm> createState() => _SignUpFormState();
 }
 
-class _LoginFormState extends State<LoginForm>{
-  
+class _SignUpFormState extends State<SignUpForm>{
+
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _pwdController = TextEditingController();
   bool obsecurePass = true;
+  
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -28,6 +29,19 @@ class _LoginFormState extends State<LoginForm>{
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
+          TextFormField(
+            controller: _nameController,
+            keyboardType: TextInputType.text,
+            cursorColor: Config.primaryColor,
+            decoration: const InputDecoration(
+              hintText: 'Username',
+              labelText: 'Username',
+              alignLabelWithHint: true,
+              prefixIcon: Icon(Icons.person_outlined),
+              prefixIconColor: Config.primaryColor,
+            ),
+          ),
+          Config.spaceSmall,
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
@@ -49,7 +63,7 @@ class _LoginFormState extends State<LoginForm>{
               hintText: 'Password',
               labelText: 'Password',
               alignLabelWithHint: true,
-              prefixIcon: Icon(Icons.lock_outline),
+              prefixIcon: const Icon(Icons.lock_outline),
               prefixIconColor: Config.primaryColor,
               suffixIcon: IconButton(
                 onPressed: () {
@@ -71,33 +85,44 @@ class _LoginFormState extends State<LoginForm>{
           Consumer<AuthModel>(builder: (context, auth, child){
             return Button(
               width: double.infinity, 
-              title: 'Sign In', 
+              title: 'Sign Up', 
               disabled: false, 
               onPressed: () async{
-                final token = await DioProvider()
-                .getToken(_emailController.text, _pwdController.text);
+                final userRegistration = await DioProvider().registerUser(
+                  _nameController.text,
+                  _emailController.text,
+                  _pwdController.text
+                );
+                print('user reg');
+                print(userRegistration);
 
-                if(token){
-                  final SharedPreferences prefs = await SharedPreferences.getInstance();
-                  final tokenValue = prefs.getString('token')?? '';
+                if(userRegistration){
+                  final token = await DioProvider().getToken(_emailController.text, _pwdController.text);
+                  if(token){
+                    final SharedPreferences prefs = await SharedPreferences.getInstance();
+                    final tokenValue = prefs.getString('token')?? '';
+                    if(tokenValue.isNotEmpty && tokenValue != ''){
+                      final response = await DioProvider().getUser(tokenValue);
+                      if(response != null){
+                        setState(() {
+                          Map<String, dynamic> appointments = {};
+                          final user = json.decode(response);
 
-                  if(tokenValue.isNotEmpty && tokenValue != ''){
-                    final response = await DioProvider().getUser(tokenValue);
-                    if(response != null){
-                      setState(() {
-                        
-                        Map<String, dynamic> appointments = {};
-                        final user = json.decode(response);
-
-                        auth.loginSuccess(user);
-                        MyApp.navigatorkey.currentState!.pushNamed('main');
-                      });
+                          auth.loginSuccess(user);
+                          MyApp.navigatorkey.currentState!.pushNamed('main');
+                        });
+                      }
                     }
                   }
+                }else{
+                  print('registeration is not successful');
                 }
               // Navigator.of(context).pushNamed('main');
               });
           })
     ],));
   }
+
+  
 }
+

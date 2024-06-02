@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_doc_appt/components/appointment_card.dart';
 import 'package:flutter_doc_appt/components/doctor_card.dart';
+import 'package:flutter_doc_appt/models/auth_model.dart';
 import 'package:flutter_doc_appt/providers/dio_provider.dart';
 import 'package:flutter_doc_appt/screens/appointment_page.dart';
 import 'package:flutter_doc_appt/utils/config.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -45,22 +47,32 @@ class _HomePageState extends State<HomePage>{
     },
   ];
 
-  Future<void> getDate() async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token')?? '';
-    if(token.isNotEmpty && token != ''){
-      final response = await DioProvider().getUser(token);
-      if(response != null){
-        setState(() {
-          user = json.decode(response);
-          print(user);
-        });
-      }
-    }
-  }
+  // Future<void> getData() async{
+  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   final token = prefs.getString('token')?? '';
+  //   if(token.isNotEmpty && token != ''){
+  //     final response = await DioProvider().getUser(token);
+  //     if(response != null){
+  //       setState(() {
+  //         user = json.decode(response);
+  //         print(user);
+  //       });
+  //     }
+  //   }
+  // }
+
+  // @override
+  // void initState(){
+  //   getData();
+  //   super.initState();
+  // }
+
   @override
   Widget build(BuildContext context) {
-    Config().init(context);   //for state change
+    Config().init(context); //for state change
+    user = Provider.of<AuthModel>(context, listen: false).getUser;
+    print("user home");
+    print(user);
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.symmetric(
@@ -72,15 +84,15 @@ class _HomePageState extends State<HomePage>{
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text(
-                    'Chimmy',
-                    style: TextStyle(fontSize: 20,
+                    user['name'],
+                    style: const TextStyle(fontSize: 20,
                     fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     child: CircleAvatar(
                       radius: 30,
                       backgroundImage: AssetImage('assets/images/chimmy.jpg'),
